@@ -1,0 +1,113 @@
+[
+    {
+        "_id": "FHeoH",
+        "name": "Benny the Bear",
+        "price": 70,
+        "labels": [
+            "Puzzle",
+            "Box game"
+        ],
+        "imgUrl": "bear.png",
+        "createdAt": 1721307706470,
+        "inStock": false
+    },
+    {
+        "_id": "r19SU",
+        "name": "Ella the Elephant",
+        "price": 90,
+        "labels": [
+            "Doll",
+            "Baby",
+            "Battery Powered"
+        ],
+        "imgUrl": "ellephent.png",
+        "createdAt": 1720676977009,
+        "inStock": true
+    },
+    {
+        "_id": "t101",
+        "name": "Leo the Lion",
+        "price": 130,
+        "labels": [
+            "Doll",
+            "Battery Powered",
+            "Baby"
+        ],
+        "imgUrl": "lion.png",
+        "createdAt": 1631031801011,
+        "inStock": true
+    },
+    {
+        "_id": "t102",
+        "name": "Ruby the Rabbit",
+        "price": 55,
+        "labels": [
+            "Puzzle",
+            "Baby"
+        ],
+        "imgUrl": "rabbit.png",
+        "createdAt": 1631032801011,
+        "inStock": true
+    },
+    {
+        "_id": "t103",
+        "name": "Tino the T-Rex",
+        "price": 160,
+        "labels": [
+            "On wheels",
+            "Battery Powered",
+            "Outdoor"
+        ],
+        "imgUrl": "dino.png",
+        "createdAt": 1631033801011,
+        "inStock": true
+    },
+    {
+        "_id": "t104",
+        "name": "Milo the Panda",
+        "price": 60,
+        "labels": [
+            "Box game",
+            "Baby"
+        ],
+        "imgUrl": "panda.png",
+        "createdAt": 1631034801011,
+        "inStock": true
+    },
+    {
+        "_id": "t105",
+        "name": "Gigi the Giraffe",
+        "price": 80,
+        "labels": [
+            "Box game",
+            "Baby"
+        ],
+        "imgUrl": "gigi.png",
+        "createdAt": 1631034801011,
+        "inStock": false
+    },
+    {
+        "_id": "t106",
+        "name": "Ollie the Octopus",
+        "price": 75,
+        "labels": [
+            "Box game",
+            "Baby"
+        ],
+        "imgUrl": "ollie.png",
+        "createdAt": 1631034801011,
+        "inStock": true
+    },
+    {
+        "_id": "t107",
+        "name": "Hanayama Puzzle",
+        "price": 45,
+        "labels": [
+            "Art",
+            "Box game"
+        ],
+        "imgUrl": "hanayama-puzzle.jpg",
+        "createdAt": 1631035801011,
+        "inStock": false
+    }
+]
