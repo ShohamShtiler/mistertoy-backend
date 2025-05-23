@@ -63,14 +63,18 @@ export async function addToyMsg(req, res) {
   try {
     const toyId = req.params.id
     const msg = {
+      id: Date.now().toString(36), // simple unique ID
       txt: req.body.txt,
-      by: loggedinUser,
+      by: {
+        _id: loggedinUser._id,
+        fullname: loggedinUser.fullname
+      },
       createdAt: Date.now()
     }
     const savedMsg = await toyService.addToyMsg(toyId, msg)
-    res.send(savedMsg)
+    res.json(savedMsg)
   } catch (err) {
-    loggerService.error('Failed to add toy msg', err)
+    logger.error('Failed to add toy msg', err)
     res.status(500).send({ err: 'Failed to add toy msg' })
   }
 }

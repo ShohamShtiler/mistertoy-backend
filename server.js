@@ -11,13 +11,6 @@ import { authRoutes } from './api/auth/auth.routes.js'
 
 const app = express()
 
-// App Configuration
-app.use(cookieParser()) // for res.cookies
-app.use(express.json()) // for req.body
-
-app.use('/api/toy', toyRoutes)
-app.use('/api/auth', authRoutes)
-
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static('public'))
 } else {
@@ -27,6 +20,15 @@ if (process.env.NODE_ENV === 'production') {
 	}
 	app.use(cors(corsOptions))
 }
+
+// App Configuration
+app.use(cookieParser()) // for res.cookies
+app.use(express.json()) // for req.body
+
+app.use('/api/toy', toyRoutes)
+app.use('/api/auth', authRoutes)
+
+
 
 app.get('/api/toy', (req, res) => {
 	const { txt, inStock, labels, pageIdx, sortBy } = req.query
