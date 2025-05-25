@@ -7,6 +7,7 @@ import { loggerService } from './services/logger.service.js'
 import { toyService } from './api/toy/toy.service.js'
 import { toyRoutes } from './api/toy/toy.routes.js'
 import { authRoutes } from './api/auth/auth.routes.js'
+import { reviewRoutes } from './api/review/review.routes.js'
 
 
 const app = express()
@@ -27,6 +28,7 @@ app.use(express.json()) // for req.body
 
 app.use('/api/toy', toyRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/review', reviewRoutes)
 
 
 
