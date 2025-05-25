@@ -43,7 +43,7 @@ async function signup(username, password, fullname) {
 
 
     const hash = await bcrypt.hash(password, saltRounds)
-    return userService.add({ username, password: hash, fullname, isAdmin: true })
+    return userService.add({ username, password: hash, fullname, isAdmin: false })
 }
 
 

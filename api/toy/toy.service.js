@@ -8,7 +8,8 @@ export const toyService = {
   getById,
   remove,
   save,
-  addToyMsg
+  addToyMsg,
+  addChatMsg,
 }
 
 async function query(filterBy = {}) {
@@ -115,4 +116,17 @@ async function addToyMsg(toyId, msg) {
     logger.error('Cannot add msg to toy', err)
     throw err
   }
+}
+
+async function addChatMsg(toyId, msg) {
+    try {
+        const collection = await dbService.getCollection('toy')
+        await collection.updateOne(
+            { _id: new ObjectId(toyId) },
+            { $push: { chat: msg } }
+        )
+    } catch (err) {
+        logger.error('Cannot add chat msg', err)
+        throw err
+    }
 }

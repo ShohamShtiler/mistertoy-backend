@@ -2,7 +2,9 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import path from 'path'
+import http from 'http'
 
+import { socketService } from './services/socket.service.js'
 import { loggerService } from './services/logger.service.js'
 import { toyService } from './api/toy/toy.service.js'
 import { toyRoutes } from './api/toy/toy.routes.js'
@@ -11,6 +13,9 @@ import { reviewRoutes } from './api/review/review.routes.js'
 
 
 const app = express()
+const server = http.createServer(app)
+
+socketService.setup(server)
 
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static('public'))
@@ -137,6 +142,6 @@ app.delete('/api/toy/:toyId', (req, res) => {
 
 // Listen will always be the last line in our server!
 const port = process.env.PORT || 3030
-app.listen(port, () => {
+server.listen(port, () => {
 	loggerService.info(`Server listening on port http://127.0.0.1:${port}/`)
 })

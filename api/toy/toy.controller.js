@@ -1,5 +1,6 @@
 import { toyService } from './toy.service.js'
 import { loggerService } from '../../services/logger.service.js'
+import { socketService } from '../../services/socket.service.js'
 
 export async function getToys(req, res) {
   try {
@@ -37,14 +38,20 @@ export async function addToy(req, res) {
 }
 
 export async function updateToy(req, res) {
-  try {
-    const toy = { ...req.body, _id: req.params.id }
-    const updatedToy = await toyService.save(toy)
-    res.send(updatedToy)
-  } catch (err) {
-    loggerService.error('Failed to update toy', err)
-    res.status(500).send({ err: 'Failed to update toy' })
-  }
+	try {
+		const toy = { ...req.body, _id: req.params.id }
+		const updatedToy = await toyService.save(toy)
+
+		socketService.emitTo({
+			type: 'admin-updated',
+			data: `🛠️ "${updatedToy.name}" was updated by admin.`,
+		})
+
+		res.send(updatedToy)
+	} catch (err) {
+		loggerService.error('Failed to update toy', err)
+		res.status(500).send({ err: 'Failed to update toy' })
+	}
 }
 
 export async function removeToy(req, res) {
