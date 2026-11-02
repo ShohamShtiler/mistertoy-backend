@@ -8,7 +8,14 @@ export async function requireAuth(req, res, next) {
 		return res.status(401).send('Not Authenticated')
 	}
     
-	const loggedinUser = authService.validateToken(req.cookies.loginToken)
+	let loggedinUser
+	try {
+		loggedinUser = await authService.getLoggedinUser(req.cookies.loginToken)
+	} catch (err) {
+		// Fail closed: if the database cannot confirm who this is, nothing privileged runs
+		loggerService.error('Cannot verify logged in user', err)
+		return res.status(500).send({ err: 'Cannot verify user' })
+	}
 	if (!loggedinUser) {
 		console.log('❌ Invalid token')
 		return res.status(401).send('Not Authenticated')
@@ -19,12 +26,9 @@ export async function requireAuth(req, res, next) {
 	next()
 }
 
+// Must run after requireAuth, which loads the user's current state from the database
 export async function requireAdmin(req, res, next) {
-    if (!req?.cookies?.loginToken) {
-        return res.status(401).send('Not Authenticated')
-    }
-
-    const loggedinUser = authService.validateToken(req.cookies.loginToken)
+    const { loggedinUser } = req
     if (!loggedinUser) return res.status(401).send('Not Authenticated')
     if (!loggedinUser.isAdmin) {
         loggerService.warn(loggedinUser.fullname + ' attempted to perform admin action')

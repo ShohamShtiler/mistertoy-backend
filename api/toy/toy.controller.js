@@ -1,15 +1,29 @@
 import { toyService } from './toy.service.js'
 import { loggerService } from '../../services/logger.service.js'
 import { socketService } from '../../services/socket.service.js'
+import { isValidSearchTxt } from '../../services/util.service.js'
+
+const SORTABLE_FIELDS = ['name', 'price', 'createdAt']
 
 export async function getToys(req, res) {
   try {
-    const filterBy = req.query
+    if (!_isValidToyQuery(req.query)) return res.status(400).send({ err: 'Invalid query' })
+    const filterBy = { ...req.query, labels: _getLabels(req.query.labels) }
     const result = await toyService.query(filterBy)
     res.send(result)
   } catch (err) {
     loggerService.error('Failed to get toys', err)
     res.status(500).send({ err: 'Failed to get toys' })
+  }
+}
+
+export async function getDashboardToys(req, res) {
+  try {
+    const toys = await toyService.getDashboardToys()
+    res.send(toys)
+  } catch (err) {
+    loggerService.error('Failed to get dashboard toys', err)
+    res.status(500).send({ err: 'Failed to get dashboard toys' })
   }
 }
 
@@ -86,6 +100,22 @@ export async function addToyMsg(req, res) {
     loggerService.error('Failed to add toy msg', err)
     res.status(500).send({ err: 'Failed to add toy msg' })
   }
+}
+
+function _isValidToyQuery({ txt, inStock, labels, pageIdx, sortBy }) {
+  if (!isValidSearchTxt(txt)) return false
+  if (inStock !== undefined && inStock !== 'true' && inStock !== 'false') return false
+  if (!_getLabels(labels).every(label => typeof label === 'string')) return false
+  if (pageIdx !== undefined && !/^\d{1,9}$/.test(String(pageIdx))) return false
+  if (sortBy === undefined) return true
+  if (Object.prototype.toString.call(sortBy) !== '[object Object]') return false
+  const { type, desc } = sortBy
+  if (type !== undefined && type !== '' && !SORTABLE_FIELDS.includes(type)) return false
+  return desc === undefined || desc === '1' || desc === '-1'
+}
+
+function _getLabels(labels) {
+  return labels === undefined ? [] : [].concat(labels)
 }
 
 export async function removeToyMsg(req, res) {

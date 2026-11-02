@@ -44,9 +44,13 @@ function setup(httpServer) {
 
     io.engine.use(cookieParser())
 
+    io.use(async (socket, next) => {
+        socket.data.userName = await _getVerifiedUserName(socket)
+        next()
+    })
+
     io.on('connection', socket => {
         console.log('User connected', socket.id)
-        socket.data.userName = _getVerifiedUserName(socket)
         socket.data.clientIp = _getClientIp(socket)
 
         socket.on('join-toy', toyId => {
@@ -91,11 +95,16 @@ function emitTo({ type, data, room = null }) {
     else io.emit(type, data)
 }
 
-function _getVerifiedUserName(socket) {
+async function _getVerifiedUserName(socket) {
     const loginToken = socket.request.cookies?.loginToken
     if (!loginToken) return GUEST_NAME
-    const fullname = authService.validateToken(loginToken)?.fullname
-    return typeof fullname === 'string' && fullname.trim() ? fullname : GUEST_NAME
+    try {
+        const user = await authService.getLoggedinUser(loginToken)
+        return typeof user?.fullname === 'string' && user.fullname.trim() ? user.fullname : GUEST_NAME
+    } catch (err) {
+        console.error('Cannot verify chat user:', err)
+        return GUEST_NAME
+    }
 }
 
 // Rate limits are per address, not per socket, so that reconnecting does not reset them.

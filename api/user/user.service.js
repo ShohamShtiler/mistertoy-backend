@@ -35,7 +35,7 @@ async function getById(userId) {
 	try {
 		const collection = await dbService.getCollection('user')
 		const user = await collection.findOne({ _id: ObjectId.createFromHexString(userId) })
-		delete user.password
+		if (user) delete user.password
 		return user
 	} catch (err) {
 		loggerService.error(`while finding user ${userId}`, err)

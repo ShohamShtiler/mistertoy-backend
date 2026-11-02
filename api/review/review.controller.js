@@ -1,15 +1,24 @@
 import { reviewService } from './review.service.js'
 import { loggerService } from '../../services/logger.service.js'
+import { isValidSearchTxt } from '../../services/util.service.js'
 import { ObjectId } from 'mongodb'
+
+const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i
 
 export async function getReviews(req, res) {
     try {
         const filterBy = req.query  // ✅ Must grab the query
+        if (!_isValidReviewQuery(filterBy)) return res.status(400).send({ err: 'Invalid query' })
         const reviews = await reviewService.query(filterBy) // ✅ Pass it forward
         res.send(reviews)
     } catch (err) {
         res.status(500).send({ err: 'Failed to get reviews' })
     }
+}
+
+function _isValidReviewQuery({ txt, toyId, userId }) {
+    const isValidId = id => id === undefined || (typeof id === 'string' && OBJECT_ID_REGEX.test(id))
+    return isValidSearchTxt(txt) && isValidId(toyId) && isValidId(userId)
 }
 
 export async function addReview(req, res) {

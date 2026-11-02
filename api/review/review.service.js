@@ -1,4 +1,5 @@
 import { dbService } from '../../services/db.service.js'
+import { escapeRegExp } from '../../services/util.service.js'
 import { ObjectId } from 'mongodb'
 
 export const reviewService = {
@@ -12,7 +13,7 @@ async function query(filterBy = {}) {
     const criteria = {}
     if (filterBy.toyId) criteria.toyId = new ObjectId(String(filterBy.toyId))
     if (filterBy.userId) criteria.byUserId = new ObjectId(String(filterBy.userId))
-    if (filterBy.txt) criteria.txt = { $regex: filterBy.txt, $options: 'i' }
+    if (filterBy.txt) criteria.txt = { $regex: escapeRegExp(filterBy.txt), $options: 'i' }
 
     const collection = await dbService.getCollection('review')
     const reviews = await collection.aggregate([

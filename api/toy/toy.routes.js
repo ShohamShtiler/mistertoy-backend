@@ -3,6 +3,7 @@ import { requireAuth, requireAdmin } from '../../middlewares/requireAuth.middlew
 import { log } from '../../middlewares/logger.middleware.js'
 import {
   getToys,
+  getDashboardToys,
   getToyById,
   addToy,
   updateToy,
@@ -15,6 +16,7 @@ export const toyRoutes = express.Router()
 
 // All toy routes will be under /api/toy
 toyRoutes.get('/', log, getToys)
+toyRoutes.get('/dashboard', getDashboardToys)
 toyRoutes.get('/:id', getToyById)
 
 toyRoutes.post('/', requireAuth, requireAdmin, addToy)

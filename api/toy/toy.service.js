@@ -1,11 +1,13 @@
 import { dbService } from '../../services/db.service.js'
 import { loggerService } from '../../services/logger.service.js'
+import { escapeRegExp } from '../../services/util.service.js'
 import { ObjectId } from 'mongodb'
 
 const PAGE_SIZE = 4
 
 export const toyService = {
   query,
+  getDashboardToys,
   getById,
   remove,
   save,
@@ -19,7 +21,7 @@ async function query(filterBy = {}) {
 
     // 🔍 Text filter (by name)
     if (filterBy.txt) {
-      const regex = new RegExp(filterBy.txt, 'i')
+      const regex = new RegExp(escapeRegExp(filterBy.txt), 'i')
       criteria.name = { $regex: regex }
     }
 
@@ -60,6 +62,18 @@ async function query(filterBy = {}) {
     }
   } catch (err) {
     console.error('Cannot query toys', err)
+    throw err
+  }
+}
+
+async function getDashboardToys() {
+  try {
+    const collection = await dbService.getCollection('toy')
+    return await collection
+      .find({}, { projection: { _id: 0, price: 1, labels: 1, inStock: 1, createdAt: 1 } })
+      .toArray()
+  } catch (err) {
+    console.error('Cannot get dashboard toys', err)
     throw err
   }
 }

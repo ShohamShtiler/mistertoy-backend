@@ -1,5 +1,6 @@
 import Cryptr from 'cryptr'
 import bcrypt from 'bcrypt'
+import { randomBytes } from 'crypto'
 
 
 import { userService } from '../user/user.service.js'
@@ -10,26 +11,28 @@ export const authService = {
     signup,
     login,
     getLoginToken,
-    validateToken
+    validateToken,
+    getLoggedinUser
 }
 
 
 const MIN_SECRET_LENGTH = 32
+const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i
 const cryptr = new Cryptr(_getLoginSecret())
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(randomBytes(32).toString('hex'), 10)
 
 
 async function login(username, password) {
-    if (typeof username !== 'string' || typeof password !== 'string') throw new Error('Invalid username or password')
+    if (typeof username !== 'string' || typeof password !== 'string') throw _getInvalidLoginError()
 
     loggerService.debug(`auth.service - login with username: ${username}`)
 
 
     const user = await userService.getByUsername(username)
-    if (!user) throw new Error('Invalid username or password')
 
-
-    const match = await bcrypt.compare(password, user.password)
-    if (!match) throw new Error('Invalid username or password')
+    // Unknown usernames take the same time as wrong passwords, so timing does not reveal which accounts exist
+    const match = await bcrypt.compare(password, user?.password || DUMMY_PASSWORD_HASH)
+    if (!user || !match) throw _getInvalidLoginError()
 
 
     delete user.password
@@ -65,6 +68,25 @@ function validateToken(loginToken) {
         console.log('Invalid login token')
     }
     return null
+}
+
+
+// The token only proves who the user is: their current state always comes from the database.
+// Returns null for a bad token or a deleted user, and throws if the database cannot answer.
+async function getLoggedinUser(loginToken) {
+    const tokenUser = validateToken(loginToken)
+    if (typeof tokenUser?._id !== 'string' || !OBJECT_ID_REGEX.test(tokenUser._id)) return null
+
+    const user = await userService.getById(tokenUser._id)
+    if (!user) return null
+    return { _id: user._id.toString(), fullname: user.fullname, isAdmin: user.isAdmin === true }
+}
+
+
+function _getInvalidLoginError() {
+    const err = new Error('Invalid username or password')
+    err.isInvalidLogin = true
+    return err
 }
 
 
