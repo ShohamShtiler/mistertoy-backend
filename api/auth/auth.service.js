@@ -14,10 +14,13 @@ export const authService = {
 }
 
 
-const cryptr = new Cryptr(process.env.SECRET1 || 'Secret-Puk-1234')
+const MIN_SECRET_LENGTH = 32
+const cryptr = new Cryptr(_getLoginSecret())
 
 
 async function login(username, password) {
+    if (typeof username !== 'string' || typeof password !== 'string') throw new Error('Invalid username or password')
+
     loggerService.debug(`auth.service - login with username: ${username}`)
 
 
@@ -39,7 +42,7 @@ async function signup(username, password, fullname) {
 
 
     loggerService.debug(`auth.service - signup with username: ${username}, fullname: ${fullname}`)
-    if (!username || !password || !fullname) throw new Error('Missing details')
+    if ([username, password, fullname].some(field => !field || typeof field !== 'string')) throw new Error('Missing details')
 
 
     const hash = await bcrypt.hash(password, saltRounds)
@@ -62,4 +65,13 @@ function validateToken(loginToken) {
         console.log('Invalid login token')
     }
     return null
+}
+
+
+function _getLoginSecret() {
+    const secret = process.env.SECRET1
+    if (!secret || secret.trim().length < MIN_SECRET_LENGTH) {
+        throw new Error(`SECRET1 environment variable is required and must be at least ${MIN_SECRET_LENGTH} characters`)
+    }
+    return secret
 }

@@ -15,6 +15,7 @@ export async function getReviews(req, res) {
 export async function addReview(req, res) {
   try {
     const { txt, toyId } = req.body
+    if (typeof txt !== 'string' || !txt.trim()) return res.status(400).send({ err: 'Review text is required' })
     const { _id: userId } = req.loggedinUser
 
     const review = {
@@ -37,6 +38,13 @@ export async function addReview(req, res) {
 export async function deleteReview(req, res) {
     try {
         const { id } = req.params
+        const { loggedinUser } = req
+        const review = await reviewService.getById(id)
+        if (!review) return res.status(404).send({ err: 'Review not found' })
+        if (!loggedinUser.isAdmin && String(review.byUserId) !== loggedinUser._id) {
+            loggerService.warn(loggedinUser.fullname + ' attempted to delete a review of another user')
+            return res.status(403).send({ err: 'Not Authorized' })
+        }
         const removedId = await reviewService.remove(id)
         res.send(removedId)
     } catch (err) {

@@ -6,7 +6,6 @@ import http from 'http'
 
 import { socketService } from './services/socket.service.js'
 import { loggerService } from './services/logger.service.js'
-import { toyService } from './api/toy/toy.service.js'
 import { toyRoutes } from './api/toy/toy.routes.js'
 import { authRoutes } from './api/auth/auth.routes.js'
 import { reviewRoutes } from './api/review/review.routes.js'
@@ -35,110 +34,18 @@ app.use('/api/toy', toyRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/review', reviewRoutes)
 
-
-
-app.get('/api/toy', (req, res) => {
-	const { txt, inStock, labels, pageIdx, sortBy } = req.query
-
-	let parsedSortBy
-	try {
-		parsedSortBy = typeof sortBy === 'string' ? JSON.parse(sortBy) : sortBy
-	} catch (err) {
-		parsedSortBy = { type: '', sortDir: 1 }
-	}
-
-	console.log('📨 Incoming sortBy:', sortBy)
-
-	const filterBy = {
-		txt: txt || '',
-		inStock: inStock ?? null,
-		labels: typeof labels === 'string' ? labels.split(',') : labels || [],
-		pageIdx: +pageIdx || 0,
-		sortBy: parsedSortBy || { type: '', sortDir: 1 },
-	}
-
-
-	toyService.query(filterBy)
-		.then(({ toys, maxPage }) => {
-			res.send({ toys, maxPage })
-		})
-		.catch(err => {
-			loggerService.error('Cannot load toys', err)
-			res.status(400).send('Cannot load toys')
-		})
+// Unknown API paths stay errors and never fall through to the React app
+app.use('/api', (req, res) => {
+	res.status(404).send({ err: 'Not found' })
 })
 
-app.get('/api/toy/:toyId', (req, res) => {
-	const { toyId } = req.params
-
-	toyService
-		.get(toyId)
-		.then(toy => {
-			res.send(toy)
-		})
-		.catch(err => {
-			loggerService.error('Cannot get toy', err)
-			res.status(400).send(err)
-		})
-})
-
-app.post('/api/toy', (req, res) => {
-	const { name, price, labels } = req.body
-	const toy = {
-		name,
-		price: +price,
-		labels,
-	}
-	toyService
-		.save(toy)
-		.then(savedToy => {
-			res.send(savedToy)
-		})
-		.catch(err => {
-			loggerService.error('Cannot add toy', err)
-			res.status(400).send('Cannot add toy')
-		})
-})
-
-app.put('/api/toy', (req, res) => {
-	const { name, price, _id, labels, inStock, imgUrl } = req.body
-	const toy = {
-		_id,
-		name,
-		price: +price,
-		labels,
-		inStock,
-		imgUrl,
-	}
-	toyService
-		.save(toy)
-		.then(savedToy => {
-			res.send(savedToy)
-		})
-		.catch(err => {
-			loggerService.error('Cannot update toy', err)
-			res.status(400).send('Cannot update toy')
-		})
-})
-
-app.delete('/api/toy/:toyId', (req, res) => {
-	const { toyId } = req.params
-
-	toyService
-		.remove(toyId)
-		.then(() => {
-			res.send()
-		})
-		.catch(err => {
-			loggerService.error('Cannot delete toy', err)
-			res.status(400).send('Cannot delete toy, ' + err)
-		})
-})
-
-// Fallback
-// app.get('/**', (req, res) => {
-// 	res.sendFile(path.resolve('public/index.html'))
-// })
+// Fallback: React Router paths have no file extension, missing files keep their 404
+if (process.env.NODE_ENV === 'production') {
+	app.get('*', (req, res, next) => {
+		if (path.extname(req.path)) return next()
+		res.sendFile(path.resolve('public/index.html'))
+	})
+}
 
 // Listen will always be the last line in our server!
 const port = process.env.PORT || 3030

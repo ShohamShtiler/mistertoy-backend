@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 
 export const reviewService = {
     query,
+    getById,
     add,
     remove
 }
@@ -45,6 +46,11 @@ async function query(filterBy = {}) {
     ]).toArray()
 
     return reviews
+}
+
+async function getById(reviewId) {
+    const collection = await dbService.getCollection('review')
+    return collection.findOne({ _id: new ObjectId(reviewId) })
 }
 
 async function add(review) {

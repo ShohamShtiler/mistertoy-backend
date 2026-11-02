@@ -60,7 +60,7 @@ export async function removeToy(req, res) {
     await toyService.remove(toyId)
     res.send({ msg: 'Toy deleted successfully' })
   } catch (err) {
-    logger.error('Failed to delete toy', err)
+    loggerService.error('Failed to delete toy', err)
     res.status(500).send({ err: 'Failed to delete toy' })
   }
 }
@@ -69,9 +69,11 @@ export async function addToyMsg(req, res) {
   const { loggedinUser } = req
   try {
     const toyId = req.params.id
+    const { txt } = req.body
+    if (typeof txt !== 'string' || !txt.trim()) return res.status(400).send({ err: 'Comment text is required' })
     const msg = {
       id: Date.now().toString(36), // simple unique ID
-      txt: req.body.txt,
+      txt,
       by: {
         _id: loggedinUser._id,
         fullname: loggedinUser.fullname
@@ -81,7 +83,7 @@ export async function addToyMsg(req, res) {
     const savedMsg = await toyService.addToyMsg(toyId, msg)
     res.json(savedMsg)
   } catch (err) {
-    logger.error('Failed to add toy msg', err)
+    loggerService.error('Failed to add toy msg', err)
     res.status(500).send({ err: 'Failed to add toy msg' })
   }
 }

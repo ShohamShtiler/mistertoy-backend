@@ -1,4 +1,5 @@
 import { dbService } from '../../services/db.service.js'
+import { loggerService } from '../../services/logger.service.js'
 import { ObjectId } from 'mongodb'
 
 const PAGE_SIZE = 4
@@ -113,7 +114,7 @@ async function addToyMsg(toyId, msg) {
     )
     return msg
   } catch (err) {
-    logger.error('Cannot add msg to toy', err)
+    loggerService.error('Cannot add msg to toy', err)
     throw err
   }
 }
@@ -121,12 +122,13 @@ async function addToyMsg(toyId, msg) {
 async function addChatMsg(toyId, msg) {
     try {
         const collection = await dbService.getCollection('toy')
-        await collection.updateOne(
+        const { matchedCount } = await collection.updateOne(
             { _id: new ObjectId(toyId) },
             { $push: { chat: msg } }
         )
+        return matchedCount > 0
     } catch (err) {
-        logger.error('Cannot add chat msg', err)
+        loggerService.error('Cannot add chat msg', err)
         throw err
     }
 }
